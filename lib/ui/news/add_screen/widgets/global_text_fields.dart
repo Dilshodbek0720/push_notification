@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../utils/color.dart';
 
 class GlobalTextField extends StatelessWidget {
-  GlobalTextField({
+  const GlobalTextField({
     Key? key,
     required this.hintText,
     required this.keyboardType,
@@ -9,80 +10,82 @@ class GlobalTextField extends StatelessWidget {
     required this.textAlign,
     this.obscureText = false,
     this.maxLine = 1,
-    required this.controller, required this.onPressed,
+    required this.onChanged,
   }) : super(key: key);
 
   final String hintText;
-  TextInputType keyboardType;
-  TextInputAction textInputAction;
-  TextAlign textAlign;
+  final TextInputType keyboardType;
+  final TextInputAction textInputAction;
+  final TextAlign textAlign;
   final bool obscureText;
-  final TextEditingController controller;
   final int maxLine;
-  final VoidCallback onPressed;
+  final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(5),
+      margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Color(0xFF17212B)
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: 2,
+              offset: const Offset(0, 0),
+            )
+          ]
       ),
       child: TextField(
+        cursorColor: const Color(0xFF4F8962),
         maxLines: maxLine,
-        style: TextStyle(
+        style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: Colors.black,
+            color: AppColors.c_0C1A30,
             fontFamily: "DMSans"),
         textAlign: textAlign,
         textInputAction: textInputAction,
         keyboardType: keyboardType,
         obscureText: obscureText,
-        controller: controller,
+        onChanged: onChanged,
         decoration: InputDecoration(
-          focusColor: Color(0xFF17212B),
-          suffixIcon: IconButton(
-            onPressed: onPressed,
-            icon: Icon(Icons.send),
-          ),
           filled: true,
           fillColor: Colors.white,
           hintText: hintText,
           hintStyle: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
+              fontWeight: FontWeight.w500,
+              color: AppColors.c_0C1A30.withOpacity(0.5),
               fontFamily: "DMSans"),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(width: 1, color: Colors.white),
+            borderSide: const BorderSide(width: 1, color: Colors.white),
           ),
           disabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(
               width: 1,
               color: Colors.white,
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               width: 1,
               color: Colors.white,
             ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               width: 1,
               color: Colors.white,
             ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               width: 1,
               color: Colors.white,
             ),

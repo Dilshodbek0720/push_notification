@@ -1,7 +1,7 @@
 import 'package:chat_app/data/news/model/model.dart';
 import 'package:flutter/material.dart';
 
-import 'detail_screen.dart';
+import '../detail_screen/detail_screen.dart';
 
 class NewsCard extends StatefulWidget {
   NewsCard({Key? key, required this.modelSql}) : super(key: key);

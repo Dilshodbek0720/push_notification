@@ -1,14 +1,15 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:chat_app/data/news/model/model.dart';
-import 'package:chat_app/services/fcm.dart';
-import 'package:chat_app/services/repository.dart';
-import 'package:chat_app/ui/news/add_screen.dart';
+import 'package:chat_app/blocs/news/news_bloc.dart';
+import 'package:chat_app/blocs/news/news_event.dart';
+import 'package:chat_app/blocs/news/news_state.dart';
+import 'package:chat_app/services/fcm/fcm.dart';
+import 'package:chat_app/ui/news/add_screen/add_screen.dart';
 import 'package:chat_app/ui/news/widgets/news_card.dart';
 import 'package:chat_app/ui/news/widgets/news_list_tile.dart';
-import 'package:chat_app/ui/news/widgets/news_provider.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/news/model/status/from_status.dart';
+import '../../utils/ui_utils/show_error_message.dart';
 
 class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
@@ -18,13 +19,16 @@ class NewsScreen extends StatefulWidget {
 }
 
 class _NewsScreenState extends State<NewsScreen> with WidgetsBindingObserver {
-  bool isSubscribe = true;
 
   @override
   void initState() {
+    init();
     initFirebase(context);
     WidgetsBinding.instance.addObserver(this);
     super.initState();
+  }
+  init(){
+    BlocProvider.of<NewsBloc>(context).add(GetNews());
   }
 
   @override
@@ -33,59 +37,73 @@ class _NewsScreenState extends State<NewsScreen> with WidgetsBindingObserver {
       appBar: AppBar(
         title: const Text("News"),
         actions: [
-          TextButton(onPressed: () {
-            setState(() {
-              isSubscribe = isSubscribe ? false : true;
-            });
-            isSubscribe ? FirebaseMessaging.instance.subscribeToTopic("news") : FirebaseMessaging.instance.subscribeToTopic("flutter");
-          }, child: Text(isSubscribe ? "ON": "OFF")),
           TextButton(onPressed: () async{
             Navigator.push(context, MaterialPageRoute(builder: (context){
-              return AddScreen();
+              return const AddScreen();
             }));
             //FirebaseMessaging.instance.subscribeToTopic("flutter_news");
-          }, child: Text("Add")),
+          }, child: const Text("Add")),
         ],
       ),
-      body: context.watch<NewsProvider>().news.isEmpty
-          ? const Center(child: Text("EMPTY!!!"))
-          : SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CarouselSlider.builder(
-                  itemCount: context.watch<NewsProvider>().news.length,
-                  itemBuilder: (context, index, id) =>
-                      NewsCard(modelSql: context.watch<NewsProvider>().news[index],),
-                  options: CarouselOptions(
-                    aspectRatio: 16 / 9,
-                    enableInfiniteScroll: false,
-                    enlargeCenterPage: true,
-                  )),
-              SizedBox(
-                height: 40.0,
-              ),
-              Text(
-                "News",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
+      body: BlocConsumer<NewsBloc, NewsAddState>(
+        builder: (context, state){
+          if(state.news.isNotEmpty) {
+            return
+            //   ListView(
+            //   children: [
+            //     ...List.generate(state.news.length, (index) => ListTile(title: Text(state.news[index].news_title),)
+            //     )
+            //   ],
+            // );
+
+              SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CarouselSlider.builder(
+                        itemCount: state.news.length,
+                        itemBuilder: (context, index, id) =>
+                            NewsCard(modelSql: state.news[index],),
+                        options: CarouselOptions(
+                          aspectRatio: 16 / 9,
+                          enableInfiniteScroll: false,
+                          enlargeCenterPage: true,
+                        )),
+                    const SizedBox(
+                      height: 40.0,
+                    ),
+                    const Text(
+                      "News",
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 16.0,
+                    ),
+                    //now let's create the cards for the recent news
+                    Column(
+                        children: List.generate(state.news.length, (index) =>
+                            NewsListTile(modelSql: state.news[index]))
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(
-                height: 16.0,
-              ),
-              //now let's create the cards for the recent news
-              Column(
-                children: List.generate(context.watch<NewsProvider>().news.length, (index) => NewsListTile(modelSql: context.watch<NewsProvider>().news[index]))
-              ),
-            ],
-          ),
-        ),
-      ),
+            );
+          }else{
+            return Center(child: Text("Empty"),);
+          }
+          },
+        listener: (context, state){
+          if(state.status == FormStatus.failure){
+            showErrorMessage(message: state.statusText, context: context);
+          }
+        },
+      )
     );
   }
 
@@ -97,7 +115,7 @@ class _NewsScreenState extends State<NewsScreen> with WidgetsBindingObserver {
         print('appLifeCycleState inactive');
         break;
       case AppLifecycleState.resumed:
-        context.read<NewsProvider>().readNews();
+        context.read<NewsBloc>().add(GetNews());
         break;
       case AppLifecycleState.paused:
         print('appLifeCycleState paused');
@@ -105,6 +123,8 @@ class _NewsScreenState extends State<NewsScreen> with WidgetsBindingObserver {
       case AppLifecycleState.detached:
         print('appLifeCycleState suspending');
         break;
+      case AppLifecycleState.hidden:
+        // TODO: Handle this case.
     }
   }
 }

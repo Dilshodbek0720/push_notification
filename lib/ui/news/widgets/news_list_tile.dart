@@ -1,6 +1,7 @@
 import 'package:chat_app/data/news/model/model.dart';
-import 'package:chat_app/ui/news/widgets/detail_screen.dart';
 import 'package:flutter/material.dart';
+
+import '../detail_screen/detail_screen.dart';
 
 class NewsListTile extends StatefulWidget {
   NewsListTile({Key? key, required this.modelSql}) : super(key: key);

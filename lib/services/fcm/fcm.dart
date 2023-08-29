@@ -1,14 +1,13 @@
-
+import 'package:chat_app/blocs/news/news_bloc.dart';
+import 'package:chat_app/blocs/news/news_event.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-
-import '../data/news/local_database/local_database.dart';
-import '../data/news/model/model.dart';
-import '../ui/news/widgets/news_provider.dart';
-import 'local_notification_service.dart';
+import '../../data/news/local_database/local_database.dart';
+import '../../data/news/model/model.dart';
+import '../notification/local_notification_service.dart';
 
 Future<void> initFirebase(BuildContext context) async {
   await Firebase.initializeApp();
@@ -30,7 +29,8 @@ Future<void> initFirebase(BuildContext context) async {
         "NOTIFICATION FOREGROUND MODE: ${message.data["news_image"]} va ${message.notification!.title} in foreground");
     LocalNotificationService.instance.showFlutterNotification(message);
     LocalDatabase.insertNews(NewsModelSql.fromJson(message.data));
-    if (context.mounted) context.read<NewsProvider>().readNews();
+    if(context.mounted) context.read<NewsBloc>().add(GetNews());
+    // if (context.mounted) context.read<NewsProvider>().readNews();
   });
 
   // BACkGROUND MESSAGE HANDLING
@@ -50,7 +50,8 @@ Future<void> initFirebase(BuildContext context) async {
   if (remoteMessage != null) {
     handleMessage(remoteMessage);
     LocalDatabase.insertNews(NewsModelSql.fromJson(remoteMessage.data));
-    if (context.mounted) context.read<NewsProvider>().readNews();
+    if(context.mounted) context.read<NewsBloc>().add(GetNews());
+    // if (context.mounted) context.read<NewsProvider>().readNews();
   }
 
   FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);

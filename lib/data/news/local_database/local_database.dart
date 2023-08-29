@@ -18,7 +18,7 @@ class LocalDatabase {
     if (_database != null) {
       return _database!;
     } else {
-      _database = await _initDB("news.db");
+      _database = await _initDB("notification.db");
       return _database!;
     }
   }
