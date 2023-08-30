@@ -20,8 +20,6 @@ class FileUploader {
     }
   }
 
-
-
   static Future<String> fileUploader(File file, String fileName) async {
     String downloadUrl = "";
     final storageRef = FirebaseStorage.instance.ref();
